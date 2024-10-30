@@ -29,7 +29,7 @@ void turn_on_led(uint8_t led_idx)
 
 // infinite loop if device id is { 0, 0, 0, 0 }
 // think about it better
-void active_led_turn_on()
+void active_led_switch(void)
 {
 	if (delays_passed >= DEVICE_ID[active_led]) 
 	{
@@ -37,13 +37,13 @@ void active_led_turn_on()
 		delays_passed = 0;
 		active_led = (active_led + 1) % LEDS_NUMBER;
 
-		active_led_turn_on();
+		active_led_switch();
 	}
 
 	turn_on_led(active_led);
 }
 
-void init_gpio()
+void init_gpio(void)
 {
 	nrf_gpio_cfg_input(button, NRF_GPIO_PIN_PULLUP);
 
@@ -60,15 +60,16 @@ int main(void)
 
 	while (true)
 	{
-		active_led_turn_on();
-
 		if (!nrf_gpio_pin_read(button)) 
 		{
 			turn_off_led(active_led);
 			nrf_delay_ms(BLINK_DELAY);
+			turn_on_led(active_led);
 			nrf_delay_ms(DELAY);
 			++delays_passed;
 		}
+
+		active_led_switch();
 	}
 
 	return 0;
