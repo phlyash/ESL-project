@@ -7,8 +7,9 @@
 
 #define LEDS_NUMBER 4
 #define DELAY 1000
+#define BLINK_DELAY 20
 	
-uint8_t device_id[] = { 6, 5, 8, 0 };
+uint8_t DEVICE_ID[] = { 6, 5, 8, 0 };
 uint8_t delays_passed = 0;
 uint8_t active_led = 0;
 
@@ -28,16 +29,18 @@ void turn_on_led(uint8_t led_idx)
 
 // infinite loop if device id is { 0, 0, 0, 0 }
 // think about it better
-void is_active_led_valid()
+void active_led_turn_on()
 {
-	if (delays_passed >= device_id[active_led]) 
+	if (delays_passed >= DEVICE_ID[active_led]) 
 	{
 		turn_off_led(active_led);
 		delays_passed = 0;
 		active_led = (active_led + 1) % LEDS_NUMBER;
 
-		is_active_led_valid();
+		active_led_turn_on();
 	}
+
+	turn_on_led(active_led);
 }
 
 void init_gpio()
@@ -57,11 +60,12 @@ int main(void)
 
 	while (true)
 	{
-		is_active_led_valid();
+		active_led_turn_on();
 
 		if (!nrf_gpio_pin_read(button)) 
 		{
-			turn_on_led(active_led);
+			turn_off_led(active_led);
+			nrf_delay_ms(BLINK_DELAY);
 			nrf_delay_ms(DELAY);
 			++delays_passed;
 		}
