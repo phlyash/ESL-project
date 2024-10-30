@@ -26,17 +26,20 @@ void is_led_valid()
 	}
 }
 
-int main(void)
+void init_gpio()
 {
-	bsp_board_init(BSP_INIT_LEDS);
-
 	nrf_gpio_cfg_input(button, NRF_GPIO_PIN_PULLUP);
 
 	for(int i = 0; i < LEDS_NUMBER; i++) 
 	{
 		nrf_gpio_cfg_output(leds[i]);
+		nrf_gpio_pin_write(leds[i], 1);
 	}
+}
 
+int main(void)
+{
+	init_gpio();
 	while (true)
 	{
 		is_led_valid();
