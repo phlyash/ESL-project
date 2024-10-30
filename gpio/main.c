@@ -1,13 +1,13 @@
 #include <stdint.h>
 #include "nrf_delay.h"
-#include "boards.h"
 #include "nrf_gpio.h"
 
+#define LEDS_NUMBER 4
 #define DELAY 1000
 	
 uint8_t device_id[] = { 6, 5, 8, 0 };
 uint8_t delays_passed = 0;
-uint8_t active_idx = 0;
+uint8_t active_led = 0;
 
 uint32_t button = NRF_GPIO_PIN_MAP(1, 6);
 
@@ -15,14 +15,14 @@ uint32_t leds[] = { NRF_GPIO_PIN_MAP(0, 6), NRF_GPIO_PIN_MAP(0, 8), NRF_GPIO_PIN
 
 // infinite loop if device id is { 0, 0, 0, 0 }
 // think about it better
-void is_led_valid()
+void is_active_led_valid()
 {
-	if (delays_passed >= device_id[active_idx]) 
+	if (delays_passed >= device_id[active_led]) 
 	{
-		nrf_gpio_pin_write(leds[active_idx], 1);
+		nrf_gpio_pin_write(leds[active_led], 1);
 		delays_passed = 0;
-		active_idx = (active_idx + 1) % LEDS_NUMBER;
-		is_led_valid();
+		active_led = (active_led + 1) % LEDS_NUMBER;
+		is_active_led_valid();
 	}
 }
 
@@ -40,13 +40,14 @@ void init_gpio()
 int main(void)
 {
 	init_gpio();
+
 	while (true)
 	{
-		is_led_valid();
+		is_active_led_valid();
 
 		if (!nrf_gpio_pin_read(button)) 
 		{
-			nrf_gpio_pin_write(leds[active_idx], 0);
+			nrf_gpio_pin_write(leds[active_led], 0);
 			nrf_delay_ms(DELAY);
 			++delays_passed;
 		}
