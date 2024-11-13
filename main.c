@@ -49,11 +49,6 @@ void turn_off_led(uint8_t led_idx)
 	nrf_gpio_pin_write(leds[led_idx], GPIO_LED_TURN_OFF);
 }
 
-void turn_on_led(uint8_t led_idx) 
-{
-	nrf_gpio_pin_write(leds[led_idx], GPIO_LED_TURN_ON);
-}
-
 void start_timer(itq_timer_t* timer, void* context)
 {
 	timer->is_working = true;
@@ -77,12 +72,12 @@ void active_led_switch(void)
 		active_led = (active_led + 1) % LEDS_NUMBER;
 
 		active_led_switch();
+		NRF_LOG_INFO("LED switched");
 	}
 }
 
 void btn_IRQHandler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-	NRF_LOG_INFO("btn_IRQHandler is_active: %d, first_click: %d", is_active, first_click_passed);
 	if (debounce_timer.is_working) 
 		stop_timer(&debounce_timer);
 
@@ -138,29 +133,31 @@ void periph_init(void)
 
 void debounce_handler(void* context)
 {
-	bool press = nrf_gpio_pin_read(button_pin);
-	NRF_LOG_INFO("debounce_handler enter, is_active: %d, first: %d, pressed: %d", is_active, first_click_passed, press);
-	NRF_LOG_INFO("context ptr: %p is_active ptr: %p click ptr: %p", context, &is_active, &first_click_passed);
-
 	bool* context_bool = (bool*) context;
+	bool pressed = nrf_gpio_pin_read(button_pin);
 
-	if (nrf_gpio_pin_read(button_pin))
+	if (pressed)
 		*context_bool = !*context_bool;
-	if (context == &is_active && press)
+
+	if ((context == &is_active) && pressed)
 	{
 		first_click_passed = false;
 		stop_timer(&double_click_timer);
+		if (is_active == true)
+		{
+			NRF_LOG_INFO("Start blinking");
+		}
+		else 
+		{
+			NRF_LOG_INFO("Stop blinking");
+		}
 	}
-
-	NRF_LOG_INFO("debounce_handler out, is_active: %d, first: %d", is_active, first_click_passed);
 
 	debounce_timer.is_working = false;
 }
 
 void double_click_handler(void* context)
 {
-	NRF_LOG_INFO("double_click_handler");
-
 	first_click_passed = false;
 
 	double_click_timer.is_working = false;
@@ -174,9 +171,10 @@ int main(void)
 	init_timer(&debounce_timer, debounce_handler, debounce_timer_id, 50);
 	init_timer(&double_click_timer, double_click_handler, double_click_timer_id, 1000);
 
+	NRF_LOG_INFO("Initialization ended, starting main cycle");
+
     while (true)
     {
-
 		if (is_active)
 			nrf_gpio_pin_write(leds[active_led], pwm_systick_state(&pwm_systick));
 		else 
