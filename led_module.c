@@ -1,16 +1,12 @@
 #include "led_module.h"
 #include "pwm_module.h"
 #include "button_handler.h"
+#include "flash_module.h"
 #include <stdint.h>
 #include <stdbool.h>
 
 input_mode_t current_mode = NO_INPUT;
-static hsv_t hsv = 
-{
-    .hue = 360 * 0.80,
-    .saturation = 100,
-    .value = 100,
-};
+static hsv_t hsv;
 static rgb_t rgb;
 static int32_t led1_duty_cycle = 0;
 uint32_t leds[4] = { NRF_GPIO_PIN_MAP(0, 6), NRF_GPIO_PIN_MAP(0, 8), NRF_GPIO_PIN_MAP(1, 9), NRF_GPIO_PIN_MAP(0, 12) };
@@ -45,6 +41,7 @@ static void change_input_mode()
         case NO_INPUT:
             step = 0;
             pwm_set_duty_cycle(PWM_LED1_CHANNEL, 0);
+            save_color(&hsv);
             return;
         case HUE_MODIFICATION:
             step = PWM_HUE_MODIFICATION_STEP;
@@ -65,6 +62,13 @@ static void modify_LED1_duty_cycle()
         step = -step;
     led1_duty_cycle += step;
     pwm_set_duty_cycle(PWM_LED1_CHANNEL, led1_duty_cycle);
+}
+
+void set_hsv(hsv_t* pHsv)
+{
+    hsv.hue = pHsv->hue;
+    hsv.saturation = pHsv->saturation;
+    hsv.value = pHsv->value;
 }
 
 static void hsv_to_rgb()
@@ -136,8 +140,6 @@ void leds_main(void)
     }
     modify_LED1_duty_cycle();
 
-    NRF_LOG_INFO("hsv: %d %d %d", hsv.hue, hsv.saturation, hsv.value);
-
     if(!is_button_holded())
     {
         display_color();
@@ -147,21 +149,19 @@ void leds_main(void)
     switch(current_mode)
     {
         case NO_INPUT:
-            display_color();
             break;
         case HUE_MODIFICATION:
             modify_hue();
-            display_color();
             break;
         case SATURATION_MODIFICATION:
             modify_saturation();
-            display_color();
             break;
         case VALUE_MODIFICATION:
             modify_value();
-            display_color();
             break;
     }
+
+    display_color();
 }
 
 void init_leds(void)

@@ -35,6 +35,7 @@ typedef struct {
     uint32_t blue;
 } rgb_t;
 
+void set_hsv(hsv_t* pHsv);
 void leds_main(void);
 void init_leds(void);
 

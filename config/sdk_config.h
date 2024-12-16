@@ -6151,6 +6151,15 @@
 #define FDS_BACKEND 1
 #endif
 
+// NVMC
+
+#ifndef NRFX_NVMC_ENABLED
+#define NRFX_NVMC_ENABLED 1
+#define PAGES_USED 1
+#define NRF_DFU_APP_DATA_AREA_SIZE 0x1000 * PAGES_USED
+#endif
+
+
 // </h> 
 //==========================================================
 

@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include "nordic_common.h"
+#include "nrf_bootloader_info.h"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
@@ -20,8 +21,12 @@
 #include "pwm_module.h"
 #include "button_handler.h"
 #include "led_module.h"
+#include "flash_module.h"
 
 uint8_t DEVICE_ID[] = { 6, 5, 8, 0 };
+
+extern uint32_t __etext;
+extern uint32_t __end__;
 
 void logs_init(void)
 {
@@ -39,11 +44,16 @@ void periph_init(void)
 	init_handlers();
 	pwm_init();
 	pwm_start();
+	init_flash();
 }
 
 int main(void)
 {
 	periph_init();
+	hsv_t hsv;
+
+	load_color(&hsv);
+	set_hsv(&hsv);
 
     while (true)
     {
