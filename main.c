@@ -17,103 +17,11 @@
 #include "nrf_delay.h"
 #include "nrfx_systick.h"
 
-#include "pwm_systick.h"
+#include "pwm_module.h"
+#include "button_handler.h"
+#include "led_module.h"
 
-
-#define GPIO_LED_TURN_OFF 1
-#define GPIO_LED_TURN_ON 0
-#define LEDS_NUMBER 4
-
-typedef struct {
-    app_timer_id_t timer;
-    bool is_working;
-	uint32_t timeout_ticks;
-} itq_timer_t;
-	
 uint8_t DEVICE_ID[] = { 6, 5, 8, 0 };
-uint8_t active_led = 0;
-uint8_t blinks_passed = 0;
-bool debounce_passed = false;
-bool first_click_passed = false;
-bool is_active = false;
-APP_TIMER_DEF(debounce_timer_id);
-APP_TIMER_DEF(double_click_timer_id);
-itq_timer_t debounce_timer;
-itq_timer_t double_click_timer;
-
-uint32_t button_pin = NRF_GPIO_PIN_MAP(1, 6);
-uint32_t leds[] = { NRF_GPIO_PIN_MAP(0, 6), NRF_GPIO_PIN_MAP(0, 8), NRF_GPIO_PIN_MAP(1, 9), NRF_GPIO_PIN_MAP(0, 12) };
-
-void turn_off_led(uint8_t led_idx) 
-{
-	nrf_gpio_pin_write(leds[led_idx], GPIO_LED_TURN_OFF);
-}
-
-void start_timer(itq_timer_t* timer, void* context)
-{
-	timer->is_working = true;
-	app_timer_start(timer->timer, timer->timeout_ticks, context);
-}
-
-void stop_timer(itq_timer_t* timer)
-{
-	timer->is_working = false;
-	app_timer_stop(timer->timer);
-}
-
-// infinite loop if device id is { 0, 0, 0, 0 }
-// think about it better
-void active_led_switch(void)
-{
-	if (blinks_passed >= DEVICE_ID[active_led]) 
-	{
-		turn_off_led(active_led);
-		blinks_passed = 0;
-		active_led = (active_led + 1) % LEDS_NUMBER;
-
-		active_led_switch();
-		NRF_LOG_INFO("LED switched");
-	}
-}
-
-void btn_IRQHandler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
-{
-	if (debounce_timer.is_working) 
-		stop_timer(&debounce_timer);
-
-	if (first_click_passed) 
-		start_timer(&debounce_timer, &is_active);
-	else 
-	{
-		start_timer(&debounce_timer, &first_click_passed);
-		start_timer(&double_click_timer, NULL);
-	}
-}
-
-void init_timer(itq_timer_t* timer, app_timer_timeout_handler_t handler, app_timer_id_t timer_id, uint32_t timeout_ms)
-{
-	timer->timer = timer_id;
-	app_timer_create(&timer->timer, APP_TIMER_MODE_SINGLE_SHOT, handler);
-	timer->is_working = false;
-	timer->timeout_ticks = APP_TIMER_TICKS(timeout_ms);
-}
-
-void init_gpio(void)
-{
-	nrfx_gpiote_init();
-
-	nrfx_gpiote_in_config_t btn_cfg = NRFX_GPIOTE_CONFIG_IN_SENSE_TOGGLE(false);
-	btn_cfg.pull = NRF_GPIO_PIN_PULLUP;
-	nrfx_gpiote_in_init(button_pin, &btn_cfg, btn_IRQHandler);
-
-	nrfx_gpiote_in_event_enable(button_pin, true);
-
-	for(int i = 0; i < LEDS_NUMBER; i++) 
-	{
-		nrf_gpio_cfg_output(leds[i]);
-		nrf_gpio_pin_write(leds[i], 1);
-	}
-}
 
 void logs_init(void)
 {
@@ -125,70 +33,24 @@ void logs_init(void)
 
 void periph_init(void)
 {
-	init_gpio();
-	nrfx_systick_init();
+	init_leds();
 	app_timer_init();
 	logs_init();
-}
-
-void debounce_handler(void* context)
-{
-	bool* context_bool = (bool*) context;
-	bool pressed = nrf_gpio_pin_read(button_pin);
-
-	if (pressed)
-		*context_bool = !*context_bool;
-
-	if ((context == &is_active) && pressed)
-	{
-		first_click_passed = false;
-		stop_timer(&double_click_timer);
-		if (is_active == true)
-		{
-			NRF_LOG_INFO("Start blinking");
-		}
-		else 
-		{
-			NRF_LOG_INFO("Stop blinking");
-		}
-	}
-
-	debounce_timer.is_working = false;
-}
-
-void double_click_handler(void* context)
-{
-	first_click_passed = false;
-
-	double_click_timer.is_working = false;
+	init_handlers();
+	pwm_init();
+	pwm_start();
 }
 
 int main(void)
 {
 	periph_init();
-	pwm_systick_t pwm_systick = INIT_PWM_SYSTICK;
-	pwm_systick_start_timer(&pwm_systick);
-	init_timer(&debounce_timer, debounce_handler, debounce_timer_id, 50);
-	init_timer(&double_click_timer, double_click_handler, double_click_timer_id, 1000);
-
-	NRF_LOG_INFO("Initialization ended, starting main cycle");
 
     while (true)
     {
-		if (is_active)
-			nrf_gpio_pin_write(leds[active_led], pwm_systick_state(&pwm_systick));
-		else 
-			turn_off_led(active_led);
-
-		if (is_active && pwm_systick.current_duty == 0)
-		{
-			++blinks_passed;
-		}
-
-		active_led_switch();
-
+		leds_main();
         LOG_BACKEND_USB_PROCESS();
         NRF_LOG_PROCESS();
+		nrf_delay_ms(20);
     }
 
 	return 0;

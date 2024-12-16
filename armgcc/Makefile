@@ -63,14 +63,16 @@ SRC_FILES += \
   $(SDK_ROOT)/external/utf_converter/utf.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_systick.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_gpiote.c \
-  $(PROJ_DIR)/pwm_systick.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_pwm.c \
+  $(PROJ_DIR)/pwm_module.c \
+  $(PROJ_DIR)/led_module.c \
+  $(PROJ_DIR)/button_handler.c \
   $(PROJ_DIR)/main.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
   $(PROJ_DIR) \
   $(SDK_ROOT)/components/libraries/fifo \
-  $(SDK_ROOT)/components/libraries/pwm \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm \
   $(SDK_ROOT)/modules/nrfx/hal \
   $(SDK_ROOT)/components/libraries/log \
@@ -95,7 +97,6 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/experimental_section_vars \
   $(SDK_ROOT)/components/libraries/delay \
   $(SDK_ROOT)/components/libraries/memobj \
-  $(SDK_ROOT)/components/libraries/low_power_pwm \
   $(SDK_ROOT)/external/fprintf \
   $(SDK_ROOT)/components \
   $(SDK_ROOT)/external/nrf_cc310/include \
@@ -139,6 +140,7 @@ CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
 CFLAGS += -DBOARD_PCA10059
 # CFLAGS += -DBSP_DEFINES_ONLY
+CFLAGS += -DNRFX_PWM_ENABLED
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
 CFLAGS += -DFLOAT_ABI_HARD
 CFLAGS += -DMBR_PRESENT
