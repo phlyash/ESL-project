@@ -7,9 +7,9 @@
 input_mode_t current_mode = NO_INPUT;
 static hsv_t hsv = 
 {
-    .hue = 50,
-    .saturation = 50,
-    .value = 50,
+    .hue = 360 * 0.80,
+    .saturation = 100,
+    .value = 100,
 };
 static rgb_t rgb;
 static int32_t led1_duty_cycle = 0;
