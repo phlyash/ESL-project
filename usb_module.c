@@ -16,7 +16,7 @@
 #define READ_SIZE 1
 #define COMMAND_BUFFER 64
 #define OUTPUT_BUFFER 128
-#ifdef ESTC_USB_CLI_ENABLED
+#if ESTC_USB_CLI_ENABLED == 1
 
 static char m_rx_buffer[READ_SIZE];
 static char command_buffer[COMMAND_BUFFER];

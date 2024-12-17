@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if ESTC_USB_CLI_ENABLED == 1
 
 void cli_rgb_command(char* input, char* output);
 static cli_command_t rgb_command = 
@@ -81,3 +82,4 @@ void cli_save_color_command(char* input, char* output)
 
     strcat(output, "Color saved successfully");
 }
+#endif

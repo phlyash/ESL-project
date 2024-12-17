@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#if ESTC_USB_CLI_ENABLED == 1
 
 typedef struct cli_command_list {
     cli_command_t* command;
@@ -107,3 +108,4 @@ void cli_help_command(char* input, char* output)
         command = command->next;
     }
 }
+#endif

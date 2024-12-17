@@ -48,7 +48,7 @@ void periph_init(void)
 	pwm_init();
 	pwm_start();
 	init_flash();
-#ifdef ESTC_USB_CLI_ENABLED
+#if ESTC_USB_CLI_ENABLED == 1
 	usb_module_init();
 	cli_commands_init();
 #endif
@@ -64,7 +64,7 @@ int main(void)
 
     while (true)
     {
-#ifdef ESTC_USB_CLI_ENABLED
+#if ESTC_USB_CLI_ENABLED == 1
         while (app_usbd_event_queue_process())
         {
             // Обработка USB событий
@@ -73,6 +73,7 @@ int main(void)
 		leds_main();
         LOG_BACKEND_USB_PROCESS();
         NRF_LOG_PROCESS();
+		NRF_LOG_INFO("%d", ESTC_USB_CLI_ENABLED);
 		nrf_delay_ms(20);
     }
 
