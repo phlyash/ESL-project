@@ -68,6 +68,9 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_nvmc.c \
   $(PROJ_DIR)/pwm_module.c \
   $(PROJ_DIR)/led_module.c \
+  $(PROJ_DIR)/cli.c \
+  $(PROJ_DIR)/cli_commands.c \
+  $(PROJ_DIR)/usb_module.c \
   $(PROJ_DIR)/button_handler.c \
   $(PROJ_DIR)/flash_module.c \
   $(PROJ_DIR)/main.c \
@@ -144,6 +147,7 @@ CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
 CFLAGS += -DBOARD_PCA10059
 # CFLAGS += -DBSP_DEFINES_ONLY
+CFLAGS += -DESTC_USB_CLI_ENABLED=$(ESTC_USB_CLI_ENABLED)
 CFLAGS += -DNRFX_PWM_ENABLED
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET
 CFLAGS += -DFLOAT_ABI_HARD

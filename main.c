@@ -22,6 +22,9 @@
 #include "button_handler.h"
 #include "led_module.h"
 #include "flash_module.h"
+#include "usb_module.h"
+#include "cli.h"
+#include "cli_commands.h"
 
 uint8_t DEVICE_ID[] = { 6, 5, 8, 0 };
 
@@ -45,6 +48,10 @@ void periph_init(void)
 	pwm_init();
 	pwm_start();
 	init_flash();
+#ifdef ESTC_USB_CLI_ENABLED
+	usb_module_init();
+	cli_commands_init();
+#endif
 }
 
 int main(void)
@@ -57,6 +64,12 @@ int main(void)
 
     while (true)
     {
+#ifdef ESTC_USB_CLI_ENABLED
+        while (app_usbd_event_queue_process())
+        {
+            // Обработка USB событий
+        }
+#endif
 		leds_main();
         LOG_BACKEND_USB_PROCESS();
         NRF_LOG_PROCESS();

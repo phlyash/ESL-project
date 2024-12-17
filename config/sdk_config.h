@@ -10060,6 +10060,11 @@
 #define NRF_LOG_STR_FORMATTER_TIMESTAMP_FORMAT_ENABLED 1
 #endif
 
+#define NRF_LOG_BACKEND_USB_ENABLED 1
+#define NRF_DRV_USBD_ENABLED 1
+#define NRF_LOG_BACKEND_UART_ENABLED 0
+#define NRF_LOG_BACKEND_RTT_ENABLED 0
+
 // </h> 
 //==========================================================
 

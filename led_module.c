@@ -71,6 +71,38 @@ void set_hsv(hsv_t* pHsv)
     hsv.value = pHsv->value;
 }
 
+void rgb_to_hsv(rgb_t* rgb, hsv_t* hsv) 
+{
+    uint8_t max, min, delta;
+
+    max = (rgb->red > rgb->green) ? ((rgb->red > rgb->blue) ? rgb->red : rgb->blue) : ((rgb->green > rgb->blue) ? rgb->green : rgb->blue);
+    min = (rgb->red < rgb->green) ? ((rgb->red < rgb->blue) ? rgb->red : rgb->blue) : ((rgb->green < rgb->blue) ? rgb->green : rgb->blue);
+
+    hsv->value = (max * 100) / 255;
+
+    delta = max - min;
+
+    if (delta == 0) {
+        hsv->hue = 0;
+        hsv->saturation = 0;
+        return;
+    }
+
+    hsv->saturation = (delta * 100) / max;
+
+    if (max == rgb->red) {
+        hsv->hue = (60 * ((rgb->green - rgb->blue) * 60 / delta) / 60) % 360;
+    } else if (max == rgb->green) {
+        hsv->hue = (60 * ((rgb->blue - rgb->red) * 60 / delta + 2 * 60) / 60) % 360;
+    } else { 
+        hsv->hue = (60 * ((rgb->red - rgb->green) * 60 / delta + 4 * 60) / 60) % 360;
+    }
+
+    if (hsv->hue < 0) {
+        hsv->hue += 360;
+    }
+}
+
 static void hsv_to_rgb()
 {
     const int sector = (hsv.hue / 60) % 6;
@@ -162,6 +194,11 @@ void leds_main(void)
     }
 
     display_color();
+}
+
+hsv_t* get_current_color(void)
+{
+    return &hsv;
 }
 
 void init_leds(void)
